@@ -7,7 +7,6 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol"
  * @title WETH contract
  */
 contract WETH is ERC20("WETH", "WETH") {
-
     /**
      * @dev Mint WETH tokens to the function caller
      */
@@ -24,11 +23,9 @@ contract WETH is ERC20("WETH", "WETH") {
         payable(msg.sender).transfer(amount);
     }
 
-
     receive() external payable {
         deposit();
     }
-
 
     fallback() external payable {
         deposit();

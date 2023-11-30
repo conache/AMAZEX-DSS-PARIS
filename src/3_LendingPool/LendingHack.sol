@@ -11,6 +11,8 @@ contract LendingHack is Ownable {
     /*//////////////////////////////
     //    Add your hack below!    //
     //////////////////////////////*/
+    string public constant name = "LendingPool hack";
+    USDC public usdc;
 
     /**
      * @dev Constructor that sets the owner of the contract
@@ -18,7 +20,9 @@ contract LendingHack is Ownable {
      * @param _owner The address of the owner of the contract
      */
     constructor(address _owner, address _usdc) {
-        // change me pls :)
+        _transferOwnership(_owner);
+        usdc = USDC(_usdc);
+        usdc.transfer(_owner, usdc.balanceOf(address(this)));
     }
 
     //============================//

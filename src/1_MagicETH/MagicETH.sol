@@ -4,10 +4,9 @@ pragma solidity ^0.8.0;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
- * @title MagicETH: The Insecure Wrapped Ether   
+ * @title MagicETH: The Insecure Wrapped Ether
  */
 contract MagicETH is ERC20("Magic insecure ETH", "mETH") {
-    
     /**
      * @notice Deposit ether to get wrapped ether
      */
@@ -20,11 +19,11 @@ contract MagicETH is ERC20("Magic insecure ETH", "mETH") {
      */
     function withdraw(uint256 amount) external {
         // _value is the amount of ether to withdraw
-        uint256 _value = address(this).balance * amount / totalSupply();
+        uint256 _value = (address(this).balance * amount) / totalSupply();
 
         _burn(msg.sender, amount);
 
-        (bool success,) = msg.sender.call{value: _value}("");
+        (bool success, ) = msg.sender.call{value: _value}("");
         require(success, "ETH transfer failed");
     }
 

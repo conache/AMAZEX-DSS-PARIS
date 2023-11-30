@@ -10,9 +10,13 @@ import {USDC} from "./USDC.sol";
  */
 interface IPool {
     function name() external view returns (string memory);
+
     function deposit() external;
+
     function withdraw(uint256 _amount) external;
+
     function getBalance(address _account) external view returns (uint256);
+
     function emergencyStop() external;
 }
 
@@ -20,7 +24,6 @@ interface IPool {
  * @title LendExGovernor
  */
 contract LendExGovernor is Ownable {
-
     mapping(address => bool) public acceptedContracts;
     USDC public usdc;
 
@@ -39,7 +42,10 @@ contract LendExGovernor is Ownable {
      * @param _contractAddress The address of the contract to check
      */
     modifier onlyValidAddress(address _contractAddress) {
-        require(acceptedContracts[_contractAddress], "Contract address is not currently accepted");
+        require(
+            acceptedContracts[_contractAddress],
+            "Contract address is not currently accepted"
+        );
         _;
     }
 
@@ -48,7 +54,10 @@ contract LendExGovernor is Ownable {
      * @param _contractAddress The address of the contract to add to the whitelist
      */
     function addContract(address _contractAddress) public onlyOwner {
-        require(!acceptedContracts[_contractAddress], "Contract address is already accepted");
+        require(
+            !acceptedContracts[_contractAddress],
+            "Contract address is already accepted"
+        );
         acceptedContracts[_contractAddress] = true;
 
         emit ContractAdded(_contractAddress);
@@ -59,7 +68,10 @@ contract LendExGovernor is Ownable {
      * @param _contractAddress The address of the contract to remove from the whitelist
      */
     function removeContract(address _contractAddress) public onlyOwner {
-        require(acceptedContracts[_contractAddress], "Contract address is not currently accepted");
+        require(
+            acceptedContracts[_contractAddress],
+            "Contract address is not currently accepted"
+        );
         acceptedContracts[_contractAddress] = false;
 
         emit ContractRemoved(_contractAddress);
@@ -70,12 +82,9 @@ contract LendExGovernor is Ownable {
      * @param _contractAddress The address of the pool contract
      * @return The name of the pool
      */
-    function getPoolName(address _contractAddress)
-        public
-        view
-        onlyValidAddress(_contractAddress)
-        returns (string memory)
-    {
+    function getPoolName(
+        address _contractAddress
+    ) public view onlyValidAddress(_contractAddress) returns (string memory) {
         return IPool(_contractAddress).name();
     }
 
@@ -84,11 +93,10 @@ contract LendExGovernor is Ownable {
      * @param _contractAddress The address of the pool contract
      * @param _amount The amount of funds to deposit
      */
-    function fundLendingPool(address _contractAddress, uint256 _amount)
-        public
-        onlyOwner
-        onlyValidAddress(_contractAddress)
-    {
+    function fundLendingPool(
+        address _contractAddress,
+        uint256 _amount
+    ) public onlyOwner onlyValidAddress(_contractAddress) {
         usdc.transfer(_contractAddress, _amount);
     }
 
@@ -97,11 +105,10 @@ contract LendExGovernor is Ownable {
      * @param _contractAddress The address of the pool contract
      * @param _amount The amount of funds to withdraw
      */
-    function withdrawFromLendingPool(address _contractAddress, uint256 _amount)
-        public
-        onlyOwner
-        onlyValidAddress(_contractAddress)
-    {
+    function withdrawFromLendingPool(
+        address _contractAddress,
+        uint256 _amount
+    ) public onlyOwner onlyValidAddress(_contractAddress) {
         IPool(_contractAddress).withdraw(_amount);
     }
 }

